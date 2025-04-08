@@ -2,40 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SRTF Scheduler</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-  <h2>SRTF Scheduler (Shortest Remaining Time First)</h2>
-
-  <form id="schedulerForm">
+    <h1>SRTF Scheduler (Shortest Remaining Time First)</h1>
     <table id="processTable">
-      <tr><th>Process ID</th><th>Arrival Time</th><th>Burst Time</th></tr>
-      <tr>
-        <td>P1</td>
-        <td><input type="number" name="arrival" required></td>
-        <td><input type="number" name="burst" required></td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Process ID</th>
+          <th>Arrival Time</th>
+          <th>Burst Time</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr>
+          <td>P1</td>
+          <td><input type="number" value="0" /></td>
+          <td><input type="number" value="8" /></td>
+        </tr>
+      </tbody>
     </table>
-    <button type="button" onclick="addRow()">Add Process</button>
-    <button type="submit">Run</button>
-  </form>
+    <button onclick="addProcess()">Add Process</button>
+    <button onclick="runSRTF()">Run</button>
 
-  <div id="ganttChart" class="hidden">
-    <h3>Gantt Chart</h3>
-    <div id="chartContainer"></div>
-  </div>
+    <h2>Gantt Chart</h2>
+    <div id="ganttChart"></div>
 
-  <div id="results" class="hidden">
-    <h3>Results</h3>
-    <table id="resultTable">
-      <tr><th>Process</th><th>Waiting Time</th><th>Turnaround Time</th></tr>
+    <h2>Results</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Process</th>
+          <th>Waiting Time</th>
+          <th>Turnaround Time</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
     </table>
   </div>
 
   <script src="script.js"></script>
-  </div>
 </body>
 </html>

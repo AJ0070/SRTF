@@ -1,115 +1,95 @@
-function addRow() {
-    const table = document.getElementById("processTable");
-    const rowCount = table.rows.length;
-    const row = table.insertRow();
-    row.innerHTML = `
-      <td>P${rowCount}</td>
-      <td><input type="number" name="arrival" required></td>
-      <td><input type="number" name="burst" required></td>
-    `;
-  }
-  
-  document.getElementById("schedulerForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const arrivals = Array.from(document.getElementsByName("arrival")).map(i => parseInt(i.value));
-    const bursts = Array.from(document.getElementsByName("burst")).map(i => parseInt(i.value));
-  
-    const processes = arrivals.map((a, i) => ({
-      id: `P${i+1}`,
-      arrival: a,
-      burst: bursts[i],
-      remaining: bursts[i],
-      completion: 0,
-      waiting: 0,
-      turnaround: 0,
-      started: false
-    }));
-  
-    srtf(processes);
-  });
-  
-  function srtf(processes) {
-    const timeline = [];
-    let time = 0;
-    let lastProcess = null;
-    let completed = 0;
-  
-    while (completed < processes.length) {
-      const available = processes.filter(p => p.arrival <= time && p.remaining > 0);
-  
-      let current = null;
-      if (available.length) {
-        current = available.reduce((a, b) => a.remaining < b.remaining ? a : b);
-      }
-  
-      if (current) {
-        if (lastProcess !== current.id) {
-          timeline.push({ id: current.id, start: time, duration: 1 });
-        } else {
-          timeline[timeline.length - 1].duration += 1;
-        }
-  
-        current.remaining -= 1;
-  
-        if (current.remaining === 0) {
-          current.completion = time + 1;
-          completed += 1;
-        }
-  
-        lastProcess = current.id;
-      } else {
-        if (lastProcess !== "idle") {
-          timeline.push({ id: "idle", start: time, duration: 1 });
-        } else {
-          timeline[timeline.length - 1].duration += 1;
-        }
-        lastProcess = "idle";
-      }
-  
-      time += 1;
-    }
-  
-    showGantt(timeline);
-    showResults(processes);
-  }
-  
-  function showGantt(gantt) {
-    const chart = document.getElementById("chartContainer");
-    chart.innerHTML = "";
-    let index = 0;
-  
-    document.getElementById("ganttChart").classList.remove("hidden");
-  
-    const interval = setInterval(() => {
-      if (index >= gantt.length) {
-        clearInterval(interval);
-        return;
-      }
-  
-      const block = document.createElement("div");
-      block.className = "gantt-bar";
-      block.textContent = gantt[index].id;
-      block.style.width = `${gantt[index].duration * 30}px`;
-      chart.appendChild(block);
-      index++;
-    }, 500);
-  }
-  
-  function showResults(processes) {
-    const table = document.getElementById("resultTable");
-    table.innerHTML = `<tr><th>Process</th><th>Waiting Time</th><th>Turnaround Time</th></tr>`;
-    document.getElementById("results").classList.remove("hidden");
-  
-    processes.forEach(p => {
-      p.turnaround = p.completion - p.arrival;
-      p.waiting = p.turnaround - p.burst;
-  
-      const row = table.insertRow();
-      row.innerHTML = `
-        <td>${p.id}</td>
-        <td>${p.waiting}</td>
-        <td>${p.turnaround}</td>
-      `;
+let processCount = 1;
+
+function addProcess() {
+  processCount++;
+  const table = document.getElementById("tableBody");
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>P${processCount}</td>
+    <td><input type="number"></td>
+    <td><input type="number"></td>
+  `;
+
+  table.appendChild(row);
+}
+
+function runSRTF() {
+  const rows = document.querySelectorAll("#tableBody tr");
+  const processes = [];
+
+  rows.forEach((row, i) => {
+    const arrival = parseInt(row.cells[1].children[0].value);
+    const burst = parseInt(row.cells[2].children[0].value);
+    processes.push({
+      id: `P${i + 1}`,
+      arrival,
+      burst,
+      remaining: burst,
+      completed: false,
     });
+  });
+
+  let time = 0, completed = 0;
+  const n = processes.length;
+  const gantt = [];
+  const wt = Array(n).fill(0);
+  const tat = Array(n).fill(0);
+
+  while (completed !== n) {
+    let idx = -1;
+    let min = Infinity;
+    for (let i = 0; i < n; i++) {
+      if (!processes[i].completed && processes[i].arrival <= time && processes[i].remaining < min && processes[i].remaining > 0) {
+        min = processes[i].remaining;
+        idx = i;
+      }
+    }
+
+    if (idx === -1) {
+      gantt.push("idle");
+      time++;
+    } else {
+      gantt.push(processes[idx].id);
+      processes[idx].remaining--;
+      time++;
+
+      if (processes[idx].remaining === 0) {
+        processes[idx].completed = true;
+        completed++;
+        let finish = time;
+        tat[idx] = finish - processes[idx].arrival;
+        wt[idx] = tat[idx] - processes[idx].burst;
+      }
+    }
   }
-  
+
+  drawGantt(gantt);
+  drawResults(processes, wt, tat);
+}
+
+function drawGantt(gantt) {
+  const container = document.getElementById("ganttChart");
+  container.innerHTML = "";
+
+  gantt.forEach(entry => {
+    const block = document.createElement("div");
+    block.className = "gantt-block";
+    block.innerText = entry;
+    container.appendChild(block);
+  });
+}
+
+function drawResults(processes, wt, tat) {
+  const tbody = document.getElementById("resultBody");
+  tbody.innerHTML = "";
+  processes.forEach((p, i) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${p.id}</td>
+      <td>${wt[i]}</td>
+      <td>${tat[i]}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
