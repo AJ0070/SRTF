@@ -8,8 +8,8 @@ window.onload = function () {
 
     row.innerHTML = `
       <td>P${processCount}</td>
-      <td><input type="number"></td>
-      <td><input type="number"></td>
+      <td><input type="number" /></td>
+      <td><input type="number" /></td>
     `;
 
     table.appendChild(row);
@@ -22,26 +22,26 @@ window.onload = function () {
     rows.forEach((row, i) => {
       const arrival = parseInt(row.cells[1].children[0].value);
       const burst = parseInt(row.cells[2].children[0].value);
-      if (isNaN(arrival) || isNaN(burst)) return;
-      processes.push({
-        id: `P${i + 1}`,
-        arrival,
-        burst,
-        remaining: burst,
-        completed: false,
-      });
+      if (!isNaN(arrival) && !isNaN(burst)) {
+        processes.push({
+          id: `P${i + 1}`,
+          arrival,
+          burst,
+          remaining: burst,
+          completed: false,
+          startTime: null,
+          completionTime: 0,
+        });
+      }
     });
 
-    let time = 0,
-      completed = 0;
+    let time = 0, completed = 0;
     const n = processes.length;
     const gantt = [];
-    const wt = Array(n).fill(0);
-    const tat = Array(n).fill(0);
 
-    while (completed !== n) {
-      let idx = -1;
-      let min = Infinity;
+    while (completed < n) {
+      let idx = -1, min = Infinity;
+
       for (let i = 0; i < n; i++) {
         if (
           !processes[i].completed &&
@@ -58,47 +58,64 @@ window.onload = function () {
         gantt.push("idle");
         time++;
       } else {
+        if (processes[idx].startTime === null)
+          processes[idx].startTime = time;
+
         gantt.push(processes[idx].id);
         processes[idx].remaining--;
         time++;
 
         if (processes[idx].remaining === 0) {
           processes[idx].completed = true;
+          processes[idx].completionTime = time;
           completed++;
-          let finish = time;
-          tat[idx] = finish - processes[idx].arrival;
-          wt[idx] = tat[idx] - processes[idx].burst;
         }
       }
     }
 
     drawGantt(gantt);
-    drawResults(processes, wt, tat);
+
+    // Calculate & display result table
+    let totalWT = 0, totalTAT = 0, totalRT = 0;
+    const tbody = document.getElementById("resultBody");
+    tbody.innerHTML = "";
+
+    processes.forEach(p => {
+      const tat = p.completionTime - p.arrival;
+      const wt = tat - p.burst;
+      const rt = p.startTime - p.arrival;
+
+      totalWT += wt;
+      totalTAT += tat;
+      totalRT += rt;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${p.id}</td>
+        <td>${p.completionTime}</td>
+        <td>${wt}</td>
+        <td>${tat}</td>
+        <td>${rt}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    const avgWT = (totalWT / n).toFixed(2);
+    const avgTAT = (totalTAT / n).toFixed(2);
+    const avgRT = (totalRT / n).toFixed(2);
+
+    document.getElementById("averages").innerText =
+      `Average WT: ${avgWT}, TAT: ${avgTAT}, RT: ${avgRT}`;
   };
 
   function drawGantt(gantt) {
     const container = document.getElementById("ganttChart");
     container.innerHTML = "";
-
-    gantt.forEach((entry) => {
+    gantt.forEach(entry => {
       const block = document.createElement("div");
       block.className = "gantt-block";
       block.innerText = entry;
       container.appendChild(block);
-    });
-  }
-
-  function drawResults(processes, wt, tat) {
-    const tbody = document.getElementById("resultBody");
-    tbody.innerHTML = "";
-    processes.forEach((p, i) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${p.id}</td>
-        <td>${wt[i]}</td>
-        <td>${tat[i]}</td>
-      `;
-      tbody.appendChild(row);
     });
   }
 };

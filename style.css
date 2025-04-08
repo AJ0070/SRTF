@@ -1,12 +1,12 @@
 body {
   margin: 0;
-  height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-  background-size: cover;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  padding: 20px;
   color: #fff;
 }
 
@@ -18,11 +18,12 @@ body {
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   padding: 30px;
-  width: 90%;
+  width: 100%;
   max-width: 900px;
+  box-sizing: border-box;
 }
 
-h2, h3 {
+h1, h2, h3 {
   text-align: center;
   margin-bottom: 20px;
   color: #fff;
@@ -32,6 +33,7 @@ table {
   width: 100%;
   margin-bottom: 20px;
   border-collapse: collapse;
+  overflow-x: auto;
 }
 
 table, th, td {
@@ -46,7 +48,7 @@ th, td {
 }
 
 input {
-  padding: 10px 14px;
+  padding: 10px;
   width: 100px;
   border: none;
   border-radius: 8px;
@@ -55,15 +57,12 @@ input {
   color: #000;
   outline: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
 }
 
 input:focus {
   background-color: rgba(255, 255, 255, 1);
   box-shadow: 0 0 8px rgba(31, 38, 135, 0.5);
 }
-
-
 
 button {
   padding: 10px 15px;
@@ -83,10 +82,10 @@ button:hover {
 
 #ganttChart {
   display: flex;
-  gap: 4px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  gap: 6px;
   justify-content: center;
+  margin-bottom: 20px;
 }
 
 .gantt-block {
@@ -95,4 +94,16 @@ button:hover {
   border-radius: 8px;
   color: white;
   font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  input {
+    width: 80px;
+    font-size: 14px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
 }
