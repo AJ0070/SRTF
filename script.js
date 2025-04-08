@@ -1,4 +1,25 @@
 window.onload = function () {
+
+  const cursor = document.createElement("div");
+  cursor.classList.add("custom-cursor");
+  document.body.appendChild(cursor);
+
+  // Move cursor with mouse
+  document.addEventListener("mousemove", (e) => {
+    cursor.style.left = `${e.clientX}px`;
+    cursor.style.top = `${e.clientY}px`;
+  });
+
+  // Optional: fade cursor out after inactivity
+  let timeout;
+  document.addEventListener("mousemove", () => {
+    cursor.style.opacity = "1";
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      cursor.style.opacity = "0";
+    }, 3000);
+  });
+  
   let processCount = 1;
 
   window.addProcess = function () {
