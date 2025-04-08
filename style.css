@@ -2,7 +2,7 @@ body {
   margin: 0;
   height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: radial-gradient(circle at top left, #0f0f0f, #1c1c1c);
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
   background-size: cover;
   display: flex;
   justify-content: center;
